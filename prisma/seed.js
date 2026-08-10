@@ -499,18 +499,18 @@ async function main() {
     const travelDate = new Date();
     travelDate.setMonth(travelDate.getMonth() + i + 1);
 
+    const sampleBookingData = {
+      userId: demoUser.id,
+      tourId: tour.id,
+      travelDate,
+      participants: 2,
+      totalPrice: tour.price * 2,
+      status: i === sampleTours.length - 1 ? "PENDING" : "CONFIRMED",
+    };
     await prisma.booking.upsert({
       where: { id: `seed-booking-${i}` },
-      update: {},
-      create: {
-        id: `seed-booking-${i}`,
-        userId: demoUser.id,
-        tourId: tour.id,
-        travelDate,
-        participants: 2,
-        totalPrice: tour.price * 2,
-        status: i === sampleTours.length - 1 ? "PENDING" : "CONFIRMED",
-      },
+      update: sampleBookingData,
+      create: { id: `seed-booking-${i}`, ...sampleBookingData },
     });
 
     if (i < 2) {
@@ -540,25 +540,29 @@ async function main() {
     }
   }
 
-  // Extra bookings across more tours/months so admin revenue & category charts have spread.
+  // Extra bookings spread across the past few months (createdAt backdated) so the
+  // admin revenue trend and category charts have more than a single data point.
   const extraTours = createdTours.slice(4, 9);
   for (let i = 0; i < extraTours.length; i++) {
     const tour = extraTours[i];
     const travelDate = new Date();
     travelDate.setMonth(travelDate.getMonth() - i);
+    const createdAt = new Date();
+    createdAt.setMonth(createdAt.getMonth() - i);
 
+    const extraBookingData = {
+      userId: demoUser.id,
+      tourId: tour.id,
+      travelDate,
+      createdAt,
+      participants: 1 + (i % 3),
+      totalPrice: tour.price * (1 + (i % 3)),
+      status: "CONFIRMED",
+    };
     await prisma.booking.upsert({
       where: { id: `seed-booking-extra-${i}` },
-      update: {},
-      create: {
-        id: `seed-booking-extra-${i}`,
-        userId: demoUser.id,
-        tourId: tour.id,
-        travelDate,
-        participants: 1 + (i % 3),
-        totalPrice: tour.price * (1 + (i % 3)),
-        status: "CONFIRMED",
-      },
+      update: extraBookingData,
+      create: { id: `seed-booking-extra-${i}`, ...extraBookingData },
     });
   }
 
