@@ -97,9 +97,37 @@ mutating route validates its body with Zod before touching the database.
 - `npm run seed` — reseed demo data
 - `npm run prisma:studio` — browse the database
 
-## Deployment
+## Deployment (Render)
 
-Deploy-ready for [Render](https://render.com) or [Railway](https://railway.app).
-Set the same environment variables from `.env.example` in your hosting
-provider's dashboard, pointing `CLIENT_URL` at your deployed frontend and
-`DATABASE_URL` at your managed Postgres instance.
+1. Push this repo to GitHub (already done if you're reading it there).
+2. Go to [render.com](https://render.com) → **New** → **Web Service** → connect
+   the `wanderly-backend` repo.
+3. Configure:
+   - **Runtime**: Node
+   - **Build Command**: `npm install && npx prisma generate`
+   - **Start Command**: `npm start`
+   - **Instance Type**: Free is fine for a demo
+4. Add environment variables (Render dashboard → **Environment**), same keys as
+   `.env.example`:
+   - `DATABASE_URL` — your Neon/Supabase connection string
+   - `JWT_SECRET` — a long random string
+   - `JWT_EXPIRES_IN` — `7d`
+   - `NODE_ENV` — `production`
+   - `CLIENT_URL` — your deployed Vercel frontend URL (add once you have it,
+     e.g. `https://wanderly.vercel.app`)
+   - `SERVER_URL` — this Render service's own URL, e.g.
+     `https://wanderly-backend.onrender.com` (needed for the Google OAuth
+     callback URL; leave `GOOGLE_CLIENT_ID`/`SECRET` blank if not using Google
+     login)
+5. Deploy. Once live, run the migration + seed once against production either
+   by temporarily setting `DATABASE_URL` in a local `.env` to the same
+   production database and running:
+   ```bash
+   npx prisma migrate deploy
+   npm run seed
+   ```
+6. Copy the Render service URL — you'll set it as `NEXT_PUBLIC_API_URL` in the
+   frontend deployment.
+
+Render's free tier spins down after inactivity, so the first request after a
+period of idleness can take ~30-50s to wake up — normal for a free demo deploy.
