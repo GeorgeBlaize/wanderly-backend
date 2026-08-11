@@ -146,6 +146,12 @@ const updateTour = asyncHandler(async (req, res) => {
 
 const deleteTour = asyncHandler(async (req, res) => {
   const { id } = req.params;
+
+  const bookingCount = await prisma.booking.count({ where: { tourId: id } });
+  if (bookingCount > 0) {
+    throw new ApiError(409, "Cannot delete a tour that has existing bookings. Cancel or reassign them first.");
+  }
+
   await prisma.tour.delete({ where: { id } });
   res.status(200).json(new ApiResponse(200, null, "Tour deleted"));
 });

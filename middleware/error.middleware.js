@@ -16,6 +16,9 @@ function errorHandler(err, req, res, next) {
   } else if (err.code === "P2025") {
     statusCode = 404;
     message = "Record not found";
+  } else if (err.code === "P2003") {
+    statusCode = 409;
+    message = "This record is still referenced by other data and cannot be deleted";
   } else if (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError") {
     statusCode = 401;
     message = "Invalid or expired session, please log in again";
